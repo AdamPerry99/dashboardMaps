@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title></title>
+
+<!--To load the data from a csv using jquery - not sure if this will be needed or not for hiding and showing charts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <link href="js/c3.min.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="js/d3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/c3.min.js"></script>
+
+<style>
+
+/* Font styling */
+          p{
+            font-family: verdana; sans-serif;
+          }
+          p.boroughText{
+            font-size: 28px;
+            text-align: center;
+          }
+
+    /*Turns the county blue on hover (click on mobile) so the user can see which county they're hovering over*/
+          path:hover {
+            fill: #3375d6;
+          }
+
+    /*Container for the map*/
+            div.map{
+              float: left;
+              width:55%;
+            }
+    /*Tooltip for the county names so the user knows what county they have clicked*/
+            div.countyName{
+              text-align: center;
+              width:100%;
+            }
+    /*Container for the data - this is where you put the charts*/
+            div.mapInfo{
+              width:44%;
+              font-size: 1.2vw;
+              line-height: 1.4em;
+              float: right;
+            }
+
+    /*Table for the data when it is loaded*/
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              font-family: verdana; sans-serif;
+              float: left;
+            }
+            th, td {
+              padding: 2px;
+              border: 1px solid black;
+            }
+
+
+    /*Map svg*/
+            .c3 svg {
+              font: 16px sans-serif;
+            }
+
+
+
+</style>
+
+</head>
+
+<body>
+
+
+
+
+
+<!--Tooltip to show what Borough has been selected - based on onclick-->
+  <div class="countyName">
+    <p id="boroughText" class="boroughText">Select a Borough</p>
+  </div>
+
+<!--SVG London Borough map-->
+  <div class="map">
+    <?xml version="1.0" encoding="UTF-8"?>
+    <svg width="100%" height="100%" version="1.1" viewBox="0 0 250 195" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+     <g transform="translate(13.741 -44.96)" fill="#000000" fill-rule="evenodd" stroke="#FFFFFF" stroke-linejoin="round" stroke-width=".50">
+         <path id="Havering" onclick='document.getElementById("boroughText").innerHTML = "Havering"' d="m176.94 74.884 9.4785 0.38688 17.41-4.0622 10.833 8.3179-1.1606 4.2557 2.7082 0.9672 6.7704 17.023 7.7376 0.19344 6.5769 10.252-20.505 5.4163-0.77375 6.3835-4.6425-3.6753-11.993 23.406-25.534-1.9344z"/>
+         <path id="Bexley" onclick='document.getElementById("boroughText").innerHTML = "Bexley"' d="m181.78 127.69 7.1572 4.0622 2.5147 7.7376 2.5147 1.9344 7.5441-1.1606 2.5147 2.3213-3.6753 8.7048-15.088 17.99 1.3541 12.767-25.921-2.3213-2.7082-54.163z" />
+         <path id="Redbridge" onclick='document.getElementById("boroughText").innerHTML = "Redbridge"' d="m143.67 74.11 7.3507 6.5769 12.38 4.4491 1.5475-4.6425 12.187-5.4163 4.2557 6.5769v6.7704l-8.1244 30.37-20.118 2.7082-24.18-21.859 2.3213-19.537z" />
+         <path id="Enfield" onclick='document.getElementById("boroughText").innerHTML = "Enfield"' d="m80.995 55.927 5.6097-7.5441 21.859-3.2885 23.019 4.4491 1.5475 13.734 3.4819 2.5147-7.3507 33.465-63.255-6.3835z"/>
+         <path id="Waltham" onclick='document.getElementById("boroughText").innerHTML = "Waltham Forest"' d="m121.42 85.716 3.4819-1.1606 0.77376-1.9344-0.38688-0.77376 9.2851-17.41 6.3835 3.2885 2.9016 6.3835-3.6753 4.0622 3.095 4.2557-2.9016 7.3507 5.0294 25.727-30.563 0.38688-5.6097-23.986z" />
+         <path id="Sutton" onclick='document.getElementById("boroughText").innerHTML = "Sutton"' d="m63.972 189.01 2.1278 6.7704v6.7704l2.5147-0.77376 5.6097 9.8654-3.095 4.836 4.6425 3.2885 5.2229-5.9966 15.088 11.606 23.793-31.337-28.822-17.41z" />
+         <path id="Kingston" onclick='document.getElementById("boroughText").innerHTML = "Kingston Upon-Thames"' d="m71.903 188.05-6.1901 6.9638-3.095 0.96719-8.3179 5.8032-5.6097 14.314-5.9966 4.6425-1.5475-1.1606-1.1606-10.059 5.0294-10.252 2.3213-2.5147-2.7081-5.9966h-1.9344l-6.9638-8.1244 7.7376-18.957 19.537 1.9344z"/>
+         <path id="Bromley" onclick='document.getElementById("boroughText").innerHTML = "Bromley"' d="m157.5 162.51 14.508 13.928 4.836-1.1606 9.5752 3.5786 0.9672 5.8999-2.9016 1.8377-3.8688 21.278-4.0622 0.29015-1.0639 6.6736-8.8015 6.5769 2.5147 9.3818-14.411 2.9983-4.2557-5.1261-5.1261 5.1261-6.3835-21.085-36.753-46.909z"/>
+         <path id="Croydon" onclick='document.getElementById("boroughText").innerHTML = "Croydon"' d="m115.21 174.03 7.3157 10.706 1.249-0.71373 4.9961 6.602v4.9961l2.8549-1.7843 4.8177 10.706 2.3196 2.3196 2.1412 10.706-7.1373-3.9255-7.4942 4.104-0.17844 2.8549-11.063 2.8549-0.35687 2.8549-9.2785 12.312-5.7098-4.4608-5.353-1.7843-1.4275-9.1 4.2824-1.9628-1.0706-8.5648 9.4569-3.5686-9.9922-33.724 14.275-5.5314z"/>
+         <path id="Barking" onclick='document.getElementById("boroughText").innerHTML = "Barking & Dagenham"' d="m156.59 114.96 6.6202-3.6004 3.0197 1.3937 9.5238-10.221-0.69687-9.0592 6.504-7.4332 0.58071 6.1556-0.34843 6.2718-1.3937 2.0906 4.9942 3.1359 5.9233-0.92915 2.6713 5.8072-7.0848 11.73-1.7422 9.2915-8.2462-2.3229-12.106 3.295z"/>
+         <path id="Newham" onclick='document.getElementById("boroughText").innerHTML = "Newham"' d="m131.04 110.66 12.66-2.439 7.2009 0.46458-1.1614-3.6005 1.9744-0.34843 5.3426 4.5296 2.5552 11.498 5.9233 2.3229 4.5296 8.7108-19.164 10.453-26.365-17.77z"/>
+         <path id="Greenwich" onclick='document.getElementById("boroughText").innerHTML = "Greenwich"' d="m147.07 164.67 1.9744-1.9744 8.8269 8.8269 4.878-4.065-1.1614-1.3937 3.252-3.6004-0.23229-5.8072-1.9744-1.5099 0.34843-4.6458 4.878-3.252 3.1359 0.11615 3.252-2.9036-0.46457-16.26-8.7108 1.5099-4.878 5.8072-15.331 1.5099-8.7108-6.9686-7.317 13.473z"/>
+         <path id="TowerHamlets" onclick='document.getElementById("boroughText").innerHTML = "Tower Hamlets"' d="m132.45 113.79-0.24638 5.9952 2.5459 3.4493 0.41063 3.4493 3.1208 1.3961 1.7246 5.0097-1.7246 0.0821-1.7246 2.5459 1.0676 3.7778-0.90338 3.0387-22.831 0.41063-1.0676-25.295z"/>
+         <path id="Hackney" onclick='document.getElementById("boroughText").innerHTML = "Hackney"' d="m114.47 127.92 1.4783-7.3913 8.2126-1.314 6.1594-4.7633 1.971-0.657 0.0821-3.3672-3.4493-3.5314-4.9276-0.41063-9.8551-10.758-14.865 2.2174 3.8599 24.391z"/>
+         <path id="Islington" onclick='document.getElementById("boroughText").innerHTML = "Islington"' d="m102.01 100.55 13.357 13.589-2.7874 0.81301-0.58072 3.0197-2.5552 2.6713 4.2973 6.7363-16.492 5.3426-5.691-32.056z"/>
+         <path id="COL" onclick='document.getElementById("boroughText").innerHTML = "City of London"' d="m104.33 128.31 4.7619-2.7874 2.5552 1.626 1.7422-1.0453 1.3937-0.11614 1.5099 4.1812-2.7874 4.7619-8.3623-0.69686z"/>
+         <path id="Merton" onclick='document.getElementById("boroughText").innerHTML = "Merton"' d="m63.447 169.08-0.81301 3.4843 3.252 10.685-1.5099 3.9489 9.7561 7.7816 3.252-3.8327 5.2265 0.92915 4.5296-3.8327 3.0197 1.9744 9.2915-0.92915 2.0906-4.4135-4.9942-21.138-25.087-0.92915z"/>
+         <path id="Lewisham" onclick='document.getElementById("boroughText").innerHTML = "Lewisham"' d="m114.43 170.36 9.8722 2.5552 4.7619-1.5099 4.065 2.2067-1.2776 1.7422 3.7166 2.0906 10.801-7.8978 3.1359 2.3229 1.1614-4.4134-2.9036-1.9744 0.11615-2.0906-6.504-8.5946 0.11614-3.4843 2.5552-3.0197-9.7561 1.0453-2.9036-6.504-7.2009-5.691-6.0395 3.9489z"/>
+         <path id="Southwark" onclick='document.getElementById("boroughText").innerHTML = "Southwark"' d="m106.3 132.96 4.065-0.46457 3.8327 0.92915 4.9942 2.3229 5.691-4.065 3.8327 2.2067v6.1556l-5.9233 0.92915 0.11614 8.7108 3.0197 8.0139-1.8583 2.2067-3.0197-0.23228-2.439 7.7816-2.3229 1.626-0.92915 5.2265-12.776-17.886z"/>
+         <path id="Haringey" onclick='document.getElementById("boroughText").innerHTML = "Haringey"' d="m79.155 83.572 41.966-0.08213 2.4638 1.3961-2.3816 5.9952-0.82126 5.3382-2.3816 3.4493-8.8696 1.1498-2.7102 4.3527-4.4348-4.3527-21.024 5.7488z"/>
+         <path id="Lambeth" onclick='document.getElementById("boroughText").innerHTML = "Lambeth"'d ="m95.826 174.9-1.8889 2.8744 6.7343 1.8068 4.2705-6.2416 10.43 1.1498-7.5556-15.275 3.4493-4.8454-0.98551-3.285-4.599-7.145 1.7246-3.7778-1.971-1.971 1.0676-5.2561-10.019-1.1498-5.3382 20.614z"/>
+         <path id="Wandsworth" onclick='document.getElementById("boroughText").innerHTML = "Wandsworth"' d="m52.135 151.41 11.333 17.903 7.7198-2.7102 3.6135 0.90339 6.3237-2.7923 0.49276 5.1739 1.8889-0.65701 0.41063 3.3672 6.8164 2.4638 0.57488-0.90339 4.599 1.0676 1.8068-1.8068 0.24638-8.7053-4.5169-11.251 5.0097-4.6812 0.98551-5.3382-20.367-4.9276z"/>
+         <path id="COW" onclick='document.getElementById("boroughText").innerHTML = "City of Westminster"' d="m85.411 142.86 14.041 0.78482 2.9036-10.918 3.4104 0.0481-0.61533-5.2504-13.391-11.96-23.666-0.0274z"/>
+         <path id="Camden" onclick='document.getElementById("boroughText").innerHTML = "Camden"' d="m82.378 101.83 12.66 0.81301 0.46458 6.504 6.2717 8.7108 3.4843 10.104-4.878 1.8583-5.4587-3.4843-3.0197-7.2009-9.5238-0.58072-3.252 1.9744-10.221-12.66z"/>
+         <path id="Barnet" onclick='document.getElementById("boroughText").innerHTML = "Barnet"' d="m45.677 73.028 13.124-3.1359 2.5552-7.4332 4.9942-0.23229 8.4785-5.2265 6.8525-1.3937v3.7166l8.5946 2.3229 0.69686 4.878 7.0848 7.2009-4.878 7.6655 1.626 2.6713-1.9744 5.8072-2.3229-3.0197-1.5099 3.0197 0.11614 5.1103-2.7874 5.5749-8.8269 9.1753h-12.66z"/>
+         <path id="Kensington" onclick='document.getElementById("boroughText").innerHTML = "Kensington & Chelsea"' d="m73.319 119.83 0.46457 5.3426 4.2973 1.1614 6.0395 11.266h3.8327l2.5552-2.439 1.7422 8.13-14.983 6.3879-10.801-22.996z"/>
+         <path id="H&F" onclick='document.getElementById("boroughText").innerHTML = "Hammersmith & Fulham"' d="m72.506 150.15 5.2265 4.5296 6.1556-1.0453 0.81301-5.691-11.498-11.498-2.9036-8.7108 1.0453-10.104-18.351 1.0453 11.498 29.268z"/>
+         <path id="Brent" onclick='document.getElementById("boroughText").innerHTML = "Brent"' d="m54.62 85.687 7.8978 10.917-1.3937 2.439 1.8583 5.5749 1.0453-1.8583 3.1359 0.69686 13.008 16.376-1.1614 3.1359-4.5296-1.626-1.2776 1.8583-10.221-0.92915-6.3879 4.4135-24.274-7.2009 3.0197-29.733z"/>
+         <path id="Harrow" onclick='document.getElementById("boroughText").innerHTML = "Harrow"' d="m23.857 111.85 8.5927-2.0831 4.9473 2.0831 2.0831-5.9888 0.32034-5.2358 6.1331-4.3984 6.3054 0.52077-2.0831-4.4265 7.0304-3.1246-11.717-16.404-4.1661-2.0831-3.9058 4.6869-22.653 9.1134z"/>
+         <path id="Richmond" onclick='document.getElementById("boroughText").innerHTML = "Richmond Upon Thames"' d="m20.706 174.89 2.0906 6.2718 8.2462 0.92915 10.685 8.3623 3.4843-1.7422 1.9744-13.357-2.6713-3.6004 2.3229-2.0906 7.317 5.1103 12.079-9.4076-4.878-6.3879 1.3937-4.5296 5.691 0.11615 0.58072-3.7166 3.7166-0.46457-3.3682-6.6202-6.2718-2.3229-41.115 4.878z"/>
+         <path id="Hounslow" onclick='document.getElementById("boroughText").innerHTML = "Hounslow"' d="m1.0778 160.02 2.0906 9.1753 6.1556 3.9489 4.065-1.3937 4.065 3.9489 6.3879 0.11614-0.92915-4.1812 5.5749-4.878-6.1556-2.5552 2.3229-4.878 4.065-1.1614 10.104 0.69686 11.034-14.17h4.065l3.9489 5.9233 4.6457-0.34843 0.46457-4.4135 2.5552-2.439v-4.1812l-8.2462-5.5749-53.658 0.69686z"/>
+         <path id="Hillingdon" onclick='document.getElementById("boroughText").innerHTML = "Hillingdon"' d="m-13.278 153.3 17.79 8.3079 9.518-9.666-2.3435-4.6869 2.6038-8.853 2.8642-0.78115 7.2907-14.061-12.759-3.385 6.5096-2.8642-0.26038-2.0831 5.9888-3.1246-9.6342-28.642-11.717-2.3435-3.1246 2.8642-11.457-8.0719-0.78115 14.581 7.0304 21.872-4.6831 8.0438 3.1246 15.771z"/>
+         <path id="Ealing" onclick='document.getElementById("boroughText").innerHTML = "Ealing"' d="m17.222 137.84 5.9233 1.8583 1.9744-0.92915 3.0197 2.7874 4.878-3.3682 2.0906 1.9744 12.195-0.58072 2.5552-2.5552 3.252-0.11615 3.6004 2.7874 4.6457-0.23229 0.92915-3.1359 1.8583-1.7422-1.3937-8.5946 1.3937-4.065-3.9489-1.9744-2.9036 3.3682h-4.2973v-3.9489l-5.4587 2.6713-3.0197-6.6202-7.2009-3.7166-4.7619-2.0906-8.4785 2.2067-5.8072 3.3682-0.11614 1.8583-6.2718 3.252 12.311 3.1359z"/>
+        </g>
+    </svg>
+</div>
+
+<!--Container for the data to appear-->
+<div class="mapInfo">
+<!--Where the data appears when called-->
+    <div id="havering_chart" style="display:none;"></div>
+    <div id="bromley_chart" style="display:none;"></div>
+    <div id="bexley_chart" style="display:none;"></div>
+    <div id="barking_and_dagenham_chart" style="display:none;"></div>
+    <div id="barnet_chart" style="display:none;"></div>
+    <div id="brent_chart" style="display:none;"></div>
+    <div id="croydon_chart" style="display:none;"></div>
+    <div id="ealing_chart" style="display:none;"></div>
+    <div id="enfield_chart" style="display:none;"></div>
+    <div id="greenwich_chart" style="display:none;"></div>
+    <div id="hackney_chart" style="display:none;"></div>
+    <div id="city_of_london_chart" style="display:none;"></div>
+    <div id="haringey_chart" style="display:none;"></div>
+    <div id="harrow_chart" style="display:none;"></div>
+    <div id="lambeth_chart" style="display:none;"></div>
+    <div id="lewisham_chart" style="display:none;"></div>
+    <div id="merton_chart" style="display:none;"></div>
+    <div id="newham_chart" style="display:none;"></div>
+    <div id="redbridge_chart" style="display:none;"></div>
+    <div id="richmond_chart" style="display:none;"></div>
+    <div id="southwark_chart" style="display:none;"></div>
+    <div id="sutton_chart" style="display:none;"></div>
+    <div id="tower_hamlets_chart" style="display:none;"></div>
+    <div id="waltham_chart" style="display:none;"></div>
+    <div id="westminster_chart" style="display:none;"></div>
+    <div id="camden_chart" style="display:none;"></div>
+    <div id="hammersmith_chart" style="display:none;"></div>
+    <div id="islington_chart" style="display:none;"></div>
+    <div id="kingston_chart" style="display:none;"></div>
+    <div id="wandsworth_chart" style="display:none;"></div>
+</div>
+
+<script>
+$(document).ready(function(){
+$('#Havering').click(function(){
+  $("#havering_chart").show();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Bromley').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").show();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Bexley').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").show();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Barking').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").show();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Barnet').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").show();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Brent').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").show();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Croydon').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").show();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Ealing').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").show();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Enfield').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").show();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Greenwich').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").show();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Hackney').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").show();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#COL').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").show();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Haringey').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").show();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Harrow').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").show();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Hillingdon').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").show();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Kensington').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").show();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Lambeth').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").show();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Lewisham').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").show();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Merton').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").show();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Newham').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").show();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Redbridge').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").show();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Richmond').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").show();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Southwark').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").show();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Sutton').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").show();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#TowerHamlets').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").show();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Waltham').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").show();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#COW').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").show();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Camden').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").show();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#H&F').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").show();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Islington').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").show();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Kingston').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").show();
+  $("#wandsworth_chart").hide();
+});
+});
+</script>
+
+<script>
+$(document).ready(function(){
+$('#Wandsworth').click(function(){
+  $("#havering_chart").hide();
+  $("#bromley_chart").hide();
+  $("#bexley_chart").hide();
+  $("#barking_and_dagenham_chart").hide();
+  $("#barnet_chart").hide();
+  $("#brent_chart").hide();
+  $("#croydon_chart").hide();
+  $("#ealing_chart").hide();
+  $("#enfield_chart").hide();
+  $("#greenwich_chart").hide();
+  $("#hackney_chart").hide();
+  $("#city_of_london_chart").hide();
+  $("#haringey_chart").hide();
+  $("#harrow_chart").hide();
+  $("#hillingdon_chart").hide();
+  $("#kensington_chart").hide();
+  $("#lambeth_chart").hide();
+  $("#lewisham_chart").hide();
+  $("#merton_chart").hide();
+  $("#newham_chart").hide();
+  $("#redbridge_chart").hide();
+  $("#richmond_chart").hide();
+  $("#southwark_chart").hide();
+  $("#sutton_chart").hide();
+  $("#tower_hamlets_chart").hide();
+  $("#waltham_chart").hide();
+  $("#westminster_chart").hide();
+  $("#camden_chart").hide();
+  $("#hammersmith_chart").hide();
+  $("#islington_chart").hide();
+  $("#kingston_chart").hide();
+  $("#wandsworth_chart").show();
+});
+});
+</script>
+
+<!-- A lot of charts -->
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#wandsworth_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Wandsworth (In 7-day period)', 778.9, 793.8, 798.4, 848.7, 811.4, 762, 766.2, 816, 776.5, 734.4, 671.6, 630, 602.4, 590.6, 565.1, 539.3, 519.6, 491.4, 467.4, 442.9, 395.8, 372.5, 350, 329.7, 313.6, 298.1, 272.7, 254.8, 241.8, 236.3, 236]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#kingston_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 Population in Kingston Upon Thames (In 7-day period)', 836.6, 837.2, 825.9, 867.6, 793.2, 729.5, 705.9, 706.5, 655.7, 609.6, 558.9, 529.6, 498.6, 458, 442.8, 431, 436, 423.1, 401.7, 397.2, 391.5, 379.1, 368.4, 336.3, 327.3, 332.9, 318.3, 308.2, 300.8, 281.7, 274.9]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#islington_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 Population in Islington (In 7 day period)', 795.2, 786.9, 804.6, 874.8, 839.3, 812.5, 802.2, 832.3, 798, 720.5, 678.4, 640.9, 579.9, 563.8, 563.8, 532.4, 515.9, 470.6, 422.3, 407.9, 379, 331.6, 327.1, 313.4, 293.6, 287.9, 264.4, 250.3, 232.2, 216.1, 204.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#hammersmith_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Hammersmith & Fulham (In 7-day period)', 743.2, 776.2, 781, 825.8, 792.9, 726.5, 750.8, 788.6, 737.3, 705.9, 661.1, 617.4, 627.6, 585.5, 585.5, 574.7, 560.6, 534.2, 513.1, 466.7, 444.5, 410, 394.3, 368.9, 344.6, 344.1, 348.4, 331.6, 320.3, 308.4, 298.7]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d'
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+          }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+ var chart2 = c3.generate({
+   bindto: '#camden_chart',
+   padding: {
+       top: 10,
+       right: 60,
+       bottom: 10,
+       left: 60
+   },
+     data: {
+         x: 'x',
+        // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+         columns: [
+           ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+            // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+             ['Coronavirus Cases per 100,000 population in Camden (In 7-day period)', 669.6, 677.3, 682.5, 719.2, 684.7, 662.9, 662.5, 692.5, 660.3, 619.2, 571.4, 546.2, 485.9, 468.8, 454, 425.5, 400.3, 392.6, 354.4, 353.3, 327.7, 313.7, 304, 294, 261.5, 246.3, 224.8, 203.7, 179.2, 166.3, 157]
+         ]
+     },
+     axis: {
+         x: {
+             type: 'timeseries',
+             tick: {
+               outer: false,
+                 format: '%m-%d',
+                 values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+             }
+         }
+     }
+ });
+ </script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#westminster_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Westminster (in 7-day period)', 579.4, 591.2, 580.1, 618.4, 610.4, 575.9, 585.1, 610.8, 595.8, 578.6, 543.4, 510.5, 496.7, 483.7, 467.2, 445.8, 427.8, 414.4, 394.9, 364.7, 337.9, 331.8, 319.9, 311.1, 297.7, 273.2, 258.7, 244.5, 222.7, 210.1, 198.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#waltham_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Waltham Forest (In 7-day period)', 1138.7, 1146.3, 1169.4, 1261.1, 1175.2, 1143.4, 1150.3, 1194.3, 1119.6, 1020.3, 951.3, 908, 848.1, 801.1, 769.7, 762.5, 730.4, 681.6, 642.3, 602.9, 579.1, 546.6, 518.8, 500.4, 444.8, 414.8, 388.8, 344.1, 305.8, 285.6, 270.1, ]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+  var chart2 = c3.generate({
+    bindto: '#tower_hamlets_chart',
+    padding: {
+        top: 10,
+        right: 60,
+        bottom: 10,
+        left: 60
+    },
+      data: {
+          x: 'x',
+         // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+          columns: [
+            ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+             // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+              ['Coronavirus Cases per 100,000 population in Tower Hamlets (In 7-day period)', 1249.3, 1273.9, 1257.9, 1338.6, 1273.9, 1180, 1160.6, 1191.1, 1138.4, 1058.1, 975.2, 905.3, 836.3, 794.8, 768.3, 716.6, 683.9, 623, 577.1, 544.4, 503.5, 459.7, 431.7, 408.6, 367.1, 327.6, 284.2, 261.4, 229.1, 218.6, 200.2]
+          ]
+      },
+      axis: {
+          x: {
+              type: 'timeseries',
+              tick: {
+                outer: false,
+                  format: '%m-%d',
+                  values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+              }
+          }
+      }
+  });
+  </script>
+
+<script type="text/javascript">
+ var chart2 = c3.generate({
+   bindto: '#sutton_chart',
+   padding: {
+       top: 10,
+       right: 60,
+       bottom: 10,
+       left: 60
+   },
+     data: {
+         x: 'x',
+        // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+         columns: [
+           ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+            // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+             ['Coronavirus Cases per 100,000 population in Sutton (In 7-day period)', 1117, 1144.7, 1126.2, 1178.1, 1065.7, 973.6, 959.1, 966.8, 901.9, 822.9, 788.5, 760.4, 735.6, 717.7, 687.2, 668.8, 661.5, 640.2, 600.9, 557.3, 524.8, 519, 491.4, 458, 401.3, 379, 365.9, 346.5, 320.8, 308.2, 308.2]
+         ]
+     },
+     axis: {
+         x: {
+             type: 'timeseries',
+             tick: {
+               outer: false,
+                 format: '%m-%d',
+                 values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+             }
+         }
+     }
+ });
+ </script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#southwark_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus cases per 100,000 population in Southwark (In 7-day period)', 925.9, 944.7, 972, 1066.4, 1033.2, 1011.5, 1022.8, 1090.5, 1037.2, 964.2, 877.6, 812, 761.2, 714.8, 685.3, 648.3, 623.5, 585.6, 542.9, 499.6, 456, 420.9, 410.9, 392.7, 362.3, 325.6, 311.8, 299.2, 277, 258.8, 248.1]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#richmond_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Richmond Upon Thames (In 7-day period)', 661.6, 656.5, 642.4, 639.8, 598.4, 549.4, 526.7, 544.4, 516.6, 472.2, 441.4, 417.1, 407, 383.8, 369.2, 336.8, 341.4, 327.7, 310.6, 295.9, 291.4, 275.7, 271.7, 252.5, 246.9, 242.4, 233.8, 222.7, 219.2, 219.2, 218.7]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#redbridge_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus cases per 100,000 population in Redbridge (In 7-day period)', 1450.1, 1501.5, 1503.2, 1579.5, 1480.6, 1394.1, 1360.3, 1389.5, 1270.9, 1148.7, 1050.4, 977.6, 900.3, 845.6, 817.1, 780.7, 756.2, 704.7, 671.3, 652.3, 611, 580.6, 554.4, 524.5, 484.6, 430.2, 400, 374.2, 335.5, 310.3, 300.8]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#newham_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus cases per 100,000 population in Newham (In 7-day period)', 1367.8, 1408, 1403.2, 1501.1, 1440.5, 1424.1, 1415.6, 1495.7, 1422.1, 1336, 1237.8, 1138.7, 1063.3, 996.2, 943.3, 903.1, 883.5, 820.4, 777.9, 716.7, 665.8, 620.7, 589.6, 549.4, 501.8, 468.4, 436.1, 412.3, 381.2, 359.1, 341.8]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#merton_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Merton (In 7-day period)', 1048.7, 1051.1, 1030.3, 1080.1, 958.6, 896.2, 890.8, 928.6, 860.8, 819.2, 781.9, 776.6, 749, 713.6, 681.7, 676.4, 645.4, 603.7, 584.4, 535.5, 515.6, 500.6, 466.7, 447.4, 411.5, 367, 365.5, 337.5, 322, 312.3, 307.4]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#lewisham_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100000 in Lewisham (in 7-day period)', 1001.2, 1036.5, 1034.5, 1113.6, 1053.2, 1029.9, 1027.3, 1087.8, 1039.4, 986.1, 915.8, 846.2, 787.3, 746.1, 703.6, 659.5, 621.2, 611.8, 584.3, 539.8, 496.3, 473.8, 451.5, 432.6, 384.2, 347.6, 327, 319.4, 288.7, 270.4, 259.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#lambeth_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus cases per 100000 Population in Lambeth (In 7-day period)', 882.7, 892.2, 898.4, 989.5, 930.6, 926.6, 973.2, 1020.4, 1001.7, 944.7, 882.1, 850.2, 799.3, 752.4, 730.9, 703.3, 691.3, 655.1, 618.3, 567.4, 503.3, 465.6, 434.6, 411.9, 373.6, 352.7, 339.8, 324.2, 307.3, 296.3, 287.1]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#kensington_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 Population in Kensington and Chelsea (In 7 day period)', 635.4, 646.9, 648.2, 669.3, 631.5, 645.6, 668, 713.5, 691.1, 662.3, 640.5, 626.4, 564.3, 508.6, 475.2, 458, 436.8, 409.3, 370.8, 347.1, 329.2, 312.6, 295.3, 279.3, 249.2, 238.3, 231.9, 221, 212, 199.8, 192.8]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#hillingdon_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Hillingdon (In 7 day period)', 963.9, 1002.1, 1009.5, 1093.9, 1052.9, 996.8, 1045.1, 1088.4, 1018, 954.1, 901.7, 840.7, 804.2, 762.5, 738.1, 724.7, 716.9, 683.4, 656, 622.1, 591.1, 587.2, 563.1, 539, 516.8, 486.9, 471.2, 456.5, 422.7, 402.5, 380.3]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#harrow_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Harrow (In 7-day period)', 948.8, 942, 929.3, 983.4, 961.9, 927.3, 930.5, 993, 964.3, 899.8, 856.4, 807.5, 764.9, 737, 705.5, 674.5, 671.7, 646.6, 618.3, 604, 584.1, 559, 545.9, 511.2, 477, 447.5, 421.2, 402.5, 381.8, 350.8, 343.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#haringey_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Haringey (In 7-day period)', 1048.2, 1054.5, 1040.8, 1116, 1052.7, 1038.9, 1048.2, 1081.7, 1034.1, 966, 908.6, 851.3, 779.1, 734, 715.8, 673, 650.7, 603, 582.5, 550.9, 520, 486.9, 472.4, 444.4, 399.8, 357, 334.6, 319.8, 291.1, 275.8, 262.8]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#city_of_london_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 Population in Hackney & City Of London (In 7-day period)', 929, 922.2, 911.5, 988.5, 933.5, 904.6, 886.7, 926.3, 910.5, 859.9, 810.1, 769.5, 742.7, 713.4, 695.9, 662.6, 638.5, 594.1, 556.7, 510.6, 482.4, 442.9, 426.7, 399.5, 355.9, 324.2, 297.8, 261.3, 244.5, 224.5, 214.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#hackney_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 Population in Hackney & City Of London (In 7-day period)', 929, 922.2, 911.5, 988.5, 933.5, 904.6, 886.7, 926.3, 910.5, 859.9, 810.1, 769.5, 742.7, 713.4, 695.9, 662.6, 638.5, 594.1, 556.7, 510.6, 482.4, 442.9, 426.7, 399.5, 355.9, 324.2, 297.8, 261.3, 244.5, 224.5, 214.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+  var chart2 = c3.generate({
+    bindto: '#greenwich_chart',
+    padding: {
+        top: 10,
+        right: 60,
+        bottom: 10,
+        left: 60
+    },
+      data: {
+          x: 'x',
+         // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+          columns: [
+            ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+             // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+              ['Coronavirus Cases per 100,000 population in Greenwich (In 7-day period)', 1071.4, 1105.4, 1106.8, 1194.3, 1111.7, 1083.2, 1084.2, 1147.5, 1085.3, 1031.5, 937, 879.7, 824.8, 787.3, 749.5, 717.9, 692.5, 673.4, 649.8, 627.9, 594.6, 551.5, 527.9, 488.3, 421.6, 383.4, 343.5, 320.2, 296.9, 275.1, 277.8]
+          ]
+      },
+      axis: {
+          x: {
+              type: 'timeseries',
+              tick: {
+                outer: false,
+                  format: '%m-%d',
+                  values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+              }
+          }
+      }
+  });
+  </script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#enfield_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Enfield (In 7-day period)', 1234.3, 1248.7, 1258.9, 1366.4, 1289.7, 1234.6, 1207.3, 1234, 1159.7, 1079.1, 960.5, 875.4, 814.6, 806.8, 775.9, 739.4, 704.3, 648.9, 621.3, 583.3, 522.2, 492.8, 464.1, 439.8, 416.4, 384.4, 361, 341.5, 316.1, 299.6, 284.6]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#ealing_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Ealing (In 7-day period)', 918.4, 969.6, 990.3, 1091.8, 1077.2, 1067.6, 1086.3, 1148, 1105, 1083.1, 1043.9, 1013.1, 961.1, 933.3, 917.2, 897.6, 866, 846.7, 807.5, 776.5, 738.1, 707.4, 667.6, 634.3, 579.9, 530.4, 502.3, 471.9, 441.5, 426.9, 412.5]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#croydon_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Croydon (In 7-day period)', 1056.3, 1084.8, 1102.1, 1204.3, 1141.4, 1082.7, 1088.2, 1139.4, 1103.9, 1035.4, 966.9, 930.2, 890.3, 857.5, 822.6, 783.3, 751, 705.2, 667.9, 635.1, 586.5, 553.4, 518.7, 494.2, 448.4, 412.7, 376.5, 352.2, 321.7, 305.9, 294.8]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#brent_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Brent (In 7-day period)', 995.8, 1011.3, 1030.4, 1124.1, 1079.5, 1083.8, 1082.3, 1135, 1113.2, 1084.1, 1035.3, 1002.2, 981, 958.5, 958.2, 916.4, 877.6, 840.3, 803.9, 754.2, 713.5, 680.5, 665.3, 624.1, 588.9, 545.8, 508.8, 476.4, 434.5, 401.5, 399.7]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#barnet_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Barnet (In 7-day period)', 1019.3, 1024.1, 1015.2, 1054.1, 995.3, 955.1, 960.9, 1005.4, 956.9, 885.9, 839.7, 782.6, 753.5, 703.3, 679.5, 652.7, 631.8, 612.8, 593.1, 557.5, 544.6, 523.4, 505.5, 481.7, 435.5, 393.8, 362, 332.4, 307.2, 290, 282,9]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#barking_and_dagenham_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Barking & Dagenham (In 7-day period)', 1565.5, 1635, 1614.8, 1719.1, 1635.9, 1580.5, 1548.1, 1639.2, 1519.9, 1426.9, 1305.7, 1199.1, 1108.9, 1039.9, 968.5, 924.4, 880.2, 829, 779.2, 742.6, 696.1, 657.1, 615.8, 592.7, 531.2, 490.8, 456.1, 431.2, 389.8, 361.2, 344.3]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+
+<script type="text/javascript">
+ var chart2 = c3.generate({
+   bindto: '#bexley_chart',
+   padding: {
+       top: 10,
+       right: 60,
+       bottom: 10,
+       left: 60
+   },
+     data: {
+         x: 'x',
+        // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+         columns: [
+           ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+            // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+             ['Coronavirus Cases per 100,000 population in Bexley (In 7-day period)', 1211.9, 1219.2, 1219.6, 1319.4, 1253.8, 1192.2, 1178.1, 1226, 1134.6, 1043.1, 932.8, 825.3, 755.2, 702, 670.6, 647.6, 609.4, 584, 563.9, 536.9, 513.1, 472, 443.4, 430.6, 384.6, 340.7, 333.1, 304.5, 278.7, 262.6, 237.2]
+         ]
+     },
+     axis: {
+         x: {
+             type: 'timeseries',
+             tick: {
+               outer: false,
+                 format: '%m-%d',
+                 values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+             }
+         }
+     }
+ });
+ </script>
+
+    <script type="text/javascript">
+    var chart2 = c3.generate({
+      bindto: '#bromley_chart',
+      padding: {
+          top: 10,
+          right: 60,
+          bottom: 10,
+          left: 60
+      },
+        data: {
+            x: 'x',
+           // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+            columns: [
+              ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+               // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+                ['Coronavirus Cases per 100,000 population in Bromley (In 7-day period)', 1132.9, 1144.3, 1104.3, 1145.8, 1022.8, 955.1, 920.8, 925, 860.3, 792.6, 717.9, 648.7, 606.9, 573.8, 554.6, 529.3, 511.2, 499.5, 483.8, 448.6, 432.7, 411, 395.1, 377, 342.4, 319.6, 303.9, 278, 263, 243.4, 229,9]
+            ]
+        },
+        axis: {
+            x: {
+                type: 'timeseries',
+                tick: {
+                  outer: false,
+                    format: '%m-%d',
+                    values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+                }
+            }
+        }
+    });
+    </script>
+
+
+
+<script type="text/javascript">
+var chart2 = c3.generate({
+  bindto: '#havering_chart',
+  padding: {
+      top: 10,
+      right: 60,
+      bottom: 10,
+      left: 60
+  },
+    data: {
+        x: 'x',
+       // xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+        columns: [
+          ['x','2021-01-01', '2021-01-02', '2021-01-03', '2021-01-04', '2021-01-05', '2021-01-06', '2021-01-07', '2021-01-08', '2021-01-09', '2021-01-10', '2021-01-11', '2021-01-12', '2021-01-13', '2021-01-14', '2021-01-15', '2021-01-16', '2021-01-17', '2021-01-18', '2021-01-19', '2021-01-20', '2021-01-21', '2021-01-22', '2021-01-23', '2021-01-24', '2021-01-25', '2021-01-26', '2021-01-27', '2021-01-28', '2021-01-29', '2021-01-30', '2021-01-31'],
+           // ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+            ['Coronavirus Cases per 100,000 population in Havering (In 7-day period)', 1331.5, 1373.1, 1335, 1422.5, 1317.7, 1214.4, 1130.8, 1145.8, 1026.8, 940.9, 846.1, 794.1, 745.1, 723.6, 684.3, 671.5, 656.9, 618, 583.7, 536.7, 484.7, 450.8, 420.7, 397.6, 369.1, 330.2, 322.1, 308.6, 287.4, 270.5, 257.4]
+        ]
+    },
+    axis: {
+        x: {
+            type: 'timeseries',
+            tick: {
+              outer: false,
+                format: '%m-%d',
+                values:['2021-01-01', '2021-01-05', '2021-01-10', '2021-01-15', '2021-01-20', '2021-01-25', '2021-01-31']
+
+            }
+        }
+    }
+});
+</script>
+
+
+
+</body>
+
+</html>
